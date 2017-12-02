@@ -11,7 +11,7 @@
 #    for more details.
 #
 
-
+import sys
 from string import Template
 try:
     import xml.etree.ElementTree as etree
@@ -37,6 +37,35 @@ def load_xml_cases(tc_xml_filename):
     cases = load_xml_cases_dom(dom)
     return cases
 
+def encode_multipart_formdata(fields, files):
+    """
+    fields is a sequence of (name, value) elements for regular form fields.
+    files is a sequence of (name, filename, value) elements for data to be uploaded as files
+    Return (content_type, body) ready for httplib.HTTP instance
+    """
+    BOUNDARY = '----------ThIs_Is_tHe_bouNdaRY'
+    CRLF = '\r\n'
+    L = []
+    for (key, value) in fields:
+        L.append('--' + BOUNDARY)
+        L.append('Content-Disposition: form-data; name="%s"' % key)
+        L.append('')
+        L.append(value)
+    for (key, filename, value) in files:
+        L.append('--' + BOUNDARY)
+        L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+        L.append('Content-Type: %s' % get_content_type(filename))
+        L.append('')
+        L.append(value)
+    L.append('--' + BOUNDARY + '--')
+    L.append('')
+    body = CRLF.join(L)
+    content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+    return content_type, body
+
+def get_content_type(filename):
+    import mimetypes
+    return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
 
 def load_xml_cases_dom(dom):
     # load cases from an already-parsed XML DOM
@@ -62,7 +91,11 @@ def load_xml_cases_dom(dom):
                 if element.tag.lower() == 'body':
                     file_payload = element.attrib.get('file')
                     if file_payload:
-                        req.body = open(file_payload, 'rb').read()
+                        #req.body = open(file_payload, 'rb').read()
+                        content_type, body = encode_multipart_formdata([],[('file',file_payload.split("/")[-1],open(file_payload, 'rb').read())])
+                        req.add_header('content-type',content_type)
+                        req.add_header('content-length', str(len(body)))
+                        req.body = body
                     else:
                         req.body = element.text
                 if element.tag.lower() == 'verify': 
