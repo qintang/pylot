@@ -180,7 +180,7 @@ def get_stats(response_stats, throughput_stats):
     stats_dict['throughput_99pct'] = throughput_stats.percentile(99)
     return stats_dict 
     
-
+import re
 def get_timer_groups(merged_log):  # get the stats by timer group
     stats_lists = [line.split(',') for line in merged_log]
     uniq_timer_groups = list(set((stats_list[10].strip() for stats_list in stats_lists)))
@@ -189,7 +189,7 @@ def get_timer_groups(merged_log):  # get the stats by timer group
         elapsed_times = []
         for stat_list in stats_lists:
             if timer_group == stat_list[10].strip():
-                if stat_list[5] == '200':  # just concerned with valid responses
+                if re.match('20',stat_list[5]):  # just concerned with valid responses
                     elapsed_times.append(stat_list[8])
         stats = corestats.Stats(elapsed_times)
         stat_group = [
