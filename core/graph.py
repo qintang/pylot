@@ -23,7 +23,7 @@ except ImportError, e:
 
 # response time graph
 def resp_graph(nested_resp_list, dir='./'):
-    fig = figure(figsize=(8, 3))  # image dimensions  
+    fig = figure(figsize=(8, 4))  # image dimensions  
     ax = fig.add_subplot(111)
     ax.set_xlabel('Elapsed Time In Test (secs)', size='x-small')
     ax.set_ylabel('Response Time (secs)' , size='x-small')
@@ -42,7 +42,7 @@ def resp_graph(nested_resp_list, dir='./'):
 
 # throughput graph
 def tp_graph(throughputs_dict, dir='./'):
-    fig = figure(figsize=(8, 3))  # image dimensions  
+    fig = figure(figsize=(8, 4))  # image dimensions  
     ax = fig.add_subplot(111)
     ax.set_xlabel('Elapsed Time In Test (secs)', size='x-small')
     ax.set_ylabel('Requests Per Second (count)' , size='x-small')
