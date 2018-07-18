@@ -10,7 +10,10 @@
 #    (at your option) any later version.  See the GNU General Public License 
 #    for more details.
 #
- 
+# -*- coding: utf-8 -*-   
+import sys
+reload(sys) 
+sys.setdefaultencoding('utf-8')
 
 import cookielib
 import copy
@@ -281,7 +284,11 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
         else:
             opener = urllib2.build_opener()
         if req.method.upper() == 'POST':
-            request = urllib2.Request(req.url, req.body, req.headers)
+            if "Content-type" in req.headers and ("charset=UTF-8" in req.headers['Content-type'] or "charset=utf-8" in req.headers['Content-type']):
+                body = req.body.encode("utf-8")
+            else:
+                body = req.body
+            request = urllib2.Request(req.url, body, req.headers)
         else:  
             request = urllib2.Request(req.url, None, req.headers)  # urllib2 assumes a GET if no data is supplied.  PUT and DELETE are not supported
         
