@@ -239,9 +239,9 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
                     
                         if is_error:                    
                             self.error_count += 1
-                            error_string = 'Agent %s:  %s - %d %s,  url: %s' % (self.id + 1, cur_time, resp.code, resp.msg, req.url)
+                            error_string = 'Agent %s:  %s - %d %s,  url: %s' % (self.id + 1, cur_time, resp.code, resp.msg, req.url_str)
                             self.error_queue.append(error_string)
-                            log_tuple = (self.id + 1, cur_date, cur_time, req_end_time, req.url.replace(',', ''), resp.code, resp.msg.replace(',', ''))
+                            log_tuple = (self.id + 1, cur_date, cur_time, req_end_time, req.url_str.replace(',', ''), resp.code, resp.msg.replace(',', ''))
                             self.log_error('%s,%s,%s,%s,%s,%s,%s' % log_tuple)  # write as csv
                             
                         resp_bytes = len(content)
@@ -258,7 +258,7 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
                         self.runtime_stats[self.id].agent_start_time = agent_start_time
                         
                         # put response stats/info on queue for reading by the consumer (ResultWriter) thread
-                        q_tuple = (self.id + 1, cur_date, cur_time, req_end_time, req.url.replace(',', ''), resp.code, resp.msg.replace(',', ''), resp_bytes, latency, connect_latency, req.timer_group)
+                        q_tuple = (self.id + 1, cur_date, cur_time, req_end_time, req.url_str.replace(',', ''), resp.code, resp.msg.replace(',', ''), resp_bytes, latency, connect_latency, req.timer_group)
                         self.results_queue.put(q_tuple)
                             
                         expire_time = (self.interval - latency)
@@ -283,13 +283,15 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie_jar))
         else:
             opener = urllib2.build_opener()
+        url = req.url()
+        req.url_str = url
         if req.method.upper() == 'POST':
             body = req.body()
             if "Content-type" in req.headers and ("charset=UTF-8" in    req.headers['Content-type'] or "charset=utf-8" in    req.headers['Content-type']):
                 body = body.encode("utf-8")
-            request = urllib2.Request(req.url, body, req.headers)
+            request = urllib2.Request(url, body, req.headers)
         else:  
-            request = urllib2.Request(req.url, None, req.headers)  # urllib2 assumes a GET if no data is supplied.  PUT and DELETE are not supported
+            request = urllib2.Request(url, None, req.headers)  # urllib2 assumes a GET if no data is supplied.  PUT and DELETE are not supported
         
         # timed message send+receive (TTLB)
         req_start_time = self.default_timer()
@@ -340,7 +342,7 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
     
     def log_http_msgs(self, req, request, resp, content):
         self.log_trace('\n\n************************* REQUEST *************************\n\n')
-        path = urlparse.urlparse(req.url).path
+        path = urlparse.urlparse(req.url_str).path
         if path == '':
             path = '/'
         self.log_trace('%s %s' % (req.method.upper(), path))

@@ -12,12 +12,12 @@ class TenjinEngine():
         return cls.instance
 
     def __init__(self):
-        #self.engine = tenjin.Engine(cache=MemoryCacheStorage())
-        self.engine = tenjin.Engine()
+        self.engine = tenjin.Engine(cache=MemoryCacheStorage())
+        #self.engine = tenjin.Engine()
     
     def renderFunction(self,dobyfile):
         context= {}
-        return lambda : self.engine.render(dobyfile, context)
+        return lambda : self.engine.render(dobyfile, context).strip()
 
 def saveStrTemaplate(str):
     '''save str to tenjin formate template file'''

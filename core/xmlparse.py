@@ -91,7 +91,7 @@ def load_xml_cases_dom(dom):
 
             for element in child:
                 if element.tag.lower() == 'url':
-                    req.url = element.text
+                    req.url_str = element.text
                 if element.tag.lower() == 'method': 
                     req.method = element.text
                 if element.tag.lower() == 'body':
@@ -121,15 +121,17 @@ def load_xml_cases_dom(dom):
             # proces tenjin
             if req.tenjin:
                 req.body = TenjinEngine().renderFunction(saveStrTemaplate(req.body_str))
+                req.url = TenjinEngine().renderFunction(saveStrTemaplate(req.url_str))
             else:
                 req.body = lambda : req.body_str
+                req.url = lambda : req.url_str
             cases.append(req)
     return cases
 
 
 def resolve_parameters(req, param_map):
     # substitute variables based on parameter mapping
-    req.url = Template(req.url).substitute(param_map)
+    req.url_str = Template(req.url_str).substitute(param_map)
     req.body_str = Template(req.body_str).substitute(param_map)
     for header in req.headers:
         req.headers[header] = Template(req.headers[header]).substitute(param_map)
