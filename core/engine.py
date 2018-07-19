@@ -284,10 +284,9 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
         else:
             opener = urllib2.build_opener()
         if req.method.upper() == 'POST':
-            if "Content-type" in req.headers and ("charset=UTF-8" in req.headers['Content-type'] or "charset=utf-8" in req.headers['Content-type']):
-                body = req.body.encode("utf-8")
-            else:
-                body = req.body
+            body = req.body()
+            if "Content-type" in req.headers and ("charset=UTF-8" in    req.headers['Content-type'] or "charset=utf-8" in    req.headers['Content-type']):
+                body = body.encode("utf-8")
             request = urllib2.Request(req.url, body, req.headers)
         else:  
             request = urllib2.Request(req.url, None, req.headers)  # urllib2 assumes a GET if no data is supplied.  PUT and DELETE are not supported
@@ -373,12 +372,14 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
 
 
 class Request():
-    def __init__(self, url='http://localhost/', method='GET', body='', headers=None, timer_group='default_timer', repeat=1):
+    def __init__(self, url='http://localhost/', method='GET', body=lambda :'',body_str='', headers=None, timer_group='default_timer', repeat=1,tenjin=False):
         self.url = url
         self.method = method
         self.body = body
+        self.body_str = body_str
         self.timer_group = timer_group
         self.repeat = repeat
+        self.tenjin = tenjin
         
         if headers:
             self.headers = headers

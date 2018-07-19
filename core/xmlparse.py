@@ -19,7 +19,8 @@ except ImportError:
     sys.stderr.write('ERROR: Pylot was unable to find the XML parser.  Make sure you have Python 2.5+ installed.\n')
     sys.exit(1)
 from engine import Request
-
+from tenjinengine import TenjinEngine
+from tenjinengine import saveStrTemaplate 
 
 
 def load_xml_string_cases(tc_xml_blob):
@@ -83,6 +84,11 @@ def load_xml_cases_dom(dom):
                 req.repeat = int(repeat)
             else:
                 req.repeat = 1
+            # support tenjin template engine
+            tenjintag = child.attrib.get('tenjin')
+            if tenjintag and tenjintag.lower() == 'true':
+                req.tenjin = True
+
             for element in child:
                 if element.tag.lower() == 'url':
                     req.url = element.text
@@ -95,9 +101,10 @@ def load_xml_cases_dom(dom):
                         content_type, body = encode_multipart_formdata([],[('file',file_payload.split("/")[-1],open(file_payload, 'rb').read())])
                         req.add_header('content-type',content_type)
                         req.add_header('content-length', str(len(body)))
-                        req.body = body
+                        req.body_str = body
+                        req.tenjin = False
                     else:
-                        req.body = element.text
+                        req.body_str = element.text
                 if element.tag.lower() == 'verify': 
                     req.verify = element.text
                 if element.tag.lower() == 'verify_negative': 
@@ -111,6 +118,11 @@ def load_xml_cases_dom(dom):
                     del splat[0]
                     req.add_header(x, ''.join(splat).strip())
             req = resolve_parameters(req, param_map)  # substitute vars
+            # proces tenjin
+            if req.tenjin:
+                req.body = TenjinEngine().renderFunction(saveStrTemaplate(req.body_str))
+            else:
+                req.body = lambda : req.body_str
             cases.append(req)
     return cases
 
@@ -118,7 +130,7 @@ def load_xml_cases_dom(dom):
 def resolve_parameters(req, param_map):
     # substitute variables based on parameter mapping
     req.url = Template(req.url).substitute(param_map)
-    req.body = Template(req.body).substitute(param_map)
+    req.body_str = Template(req.body_str).substitute(param_map)
     for header in req.headers:
         req.headers[header] = Template(req.headers[header]).substitute(param_map)
     return req
