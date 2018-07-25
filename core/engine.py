@@ -285,6 +285,13 @@ class LoadAgent(Thread):  # each Agent/VU runs in its own thread
             opener = urllib2.build_opener()
         url = req.url()
         req.url_str = url
+        # dynamic header
+        if len(req.headers4Tenjin)>0:
+            for item in req.headers4Tenjin:
+                splat = item().split(':')
+                x = splat[0].strip()
+                del splat[0]
+                req.add_header(x, ''.join(splat).strip())
         if req.method.upper() == 'POST':
             body = req.body()
             if "Content-type" in req.headers and ("charset=UTF-8" in    req.headers['Content-type'] or "charset=utf-8" in    req.headers['Content-type']):
@@ -388,6 +395,8 @@ class Request():
         else:
             self.headers = {}
         
+        self.headers4Tenjin = []
+
         # verification string or regex
         self.verify = ''
         self.verify_negative = ''
@@ -409,6 +418,9 @@ class Request():
             
     def add_header(self, header_name, value):
         self.headers[header_name] = value
+    
+    def add_header_tenjin(self, headerandvalue):
+        self.headers4Tenjin.append(headerandvalue)
 
 
 

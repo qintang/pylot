@@ -28,7 +28,14 @@ Get the installer from here: http://sourceforge.net/projects/numpy
 Step 5: Install Matplotlib (optional - used for report graphs)
 Get the installer from here: http://sourceforge.net/projects/matplotlib
 
-Step 6: Run Pylot
+Step 6: Install tenjin
+Get the installer from here: https://pypi.org/project/Tenjin/
+
+```bash
+pip install Tenjin
+```
+
+Step 7: Run Pylot
 
 
 GUI Mode:
@@ -82,11 +89,12 @@ Test cases are declared in an XML file named "testcases.xml", or a different XML
 
 A test case is defined using the following syntax. Only the URL element is required.
 
-<case>
+<case tenjin="true|false">
   <url>URL</url>
   <method>HTTP METHOD</method>
-  <body>REQUEST BODY CONTENT</body>
+  <body >REQUEST BODY CONTENT</body>
   <add_header>ADDITIONAL HTTP HEADER</add_header>
+  <add_header_tenjin>ADDITIONAL HTTP HEADER Tenjin Template</add_header_tenjin>
   <verify>STRING OR REGULAR EXPRESSION</verify>
   <verify_negative>STRING OR REGULAR EXPRESSION</verify_negative>
   <timer_group>TIMER GROUP NAME</timer_group>
@@ -105,6 +113,24 @@ We can add positive and negative verifications. A positive verification is a str
     <verify>Copyright.*Corey Goldberg</verify>
     <verify_negative>Error</verify_negative>
 <case>
+
+Tenjin:
+body and url context support Tenjin tenamplate.
+Example:
+<case tenjin="true">
+  <url><![CDATA[
+  <?py import random ?>
+  <?py ids = [10047,10048,10049,10050,10052,10053,10055,10057,10058,10059,10060,10062,10063,10064,10066,10070,10071,10072,10074,10075,10076,10077,10079,10080,10081,10082,10083,10084,10089,10090,10092,10093,10094,10095,10096,10097,10099,10101,10102] ?>
+  <?py _random = ids[random.randint(0, len(ids)-1)] ?>
+  http://172.18.21.56:31941/node-config/v1/node/#{_random}]]></url>
+  <method>POST</method>
+  <add_header>Content-type: application/json</add_header>
+  <add_header_tenjin><![CDATA[
+<?py import random ?>
+<?py ids = ["t1","t2","t3","t4","t5","t6","t7","t8","t9","t0"] ?>
+<?py _random = ids[random.randint(0, len(ids)-1)] ?>
+X-TENANT-ID: #{_random}]]></add_header_tenjin>
+</case>
 
 
 Cookies:

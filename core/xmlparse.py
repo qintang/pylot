@@ -117,6 +117,9 @@ def load_xml_cases_dom(dom):
                     x = splat[0].strip()
                     del splat[0]
                     req.add_header(x, ''.join(splat).strip())
+                if element.tag.lower() == 'add_header_tenjin':
+                    req.add_header_tenjin(TenjinEngine().renderFunction(saveStrTemaplate(element.text)))
+                        
             req = resolve_parameters(req, param_map)  # substitute vars
             # proces tenjin
             if req.tenjin:
