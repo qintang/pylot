@@ -81,11 +81,14 @@ def generate_results(dir, test_name):
     
     try:  # graphing only works on systems with Matplotlib installed
         print 'Generating Graphs...'
+        import matplotlib as mpl
+        mpl.use('Agg')
         import graph
         graph.resp_graph(timings, dir=dir+'/')
         graph.tp_graph(throughputs, dir=dir+'/')
-    except: 
+    except BaseException,Argument: 
         sys.stderr.write('ERROR: Unable to generate graphs with Matplotlib\n')
+        print Argument
     
     print '\nDone generating results. You can view your test at:'
     print '%s/results.html\n' % dir
